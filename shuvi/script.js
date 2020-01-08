@@ -210,8 +210,8 @@ const Scene = {
         loader.load("./fbx/" + file, function(model){
             let mixer = new THREE.AnimationMixer( model );
 
-            var action = mixer.clipAction( model.animations[ 0 ] );
-            action.play();
+            //var action = mixer.clipAction( model.animations[ 0 ] );
+            //action.play();
 
             model.scale.set(echelle, echelle, echelle);
             model.position.set(position[0], position[1], position[2]);

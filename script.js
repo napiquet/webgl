@@ -70,114 +70,11 @@ const Scene = {
         vars.scene.add(sphere);
 
         //chargement des objets
-        Scene.loadFBX("schwi/schwiFix.fbx", 0.2, [0, 50, 0], [0, 0, 0], 0xFFD700, "schwi", () => {
-            Scene.loadFBX("schwi/schwiFix.fbx", 0.2, [0, 50, 0], [0, 0, 0], 0xCD7F32, "schwi2", () => {
-                Scene.loadFBX("schwi/schwiFix.fbx", 0.2, [0, 50, 0], [0, 0, 0], 0xC0C0C0, "schwi3", () => {
-                    Scene.loadFBX("Socle_Partie1.FBX", 10, [0, 0, 0], [0, 0, 0], 0x1A1A1A, "socle1", () => {
-                        Scene.loadFBX("Socle_Partie2.FBX", 10, [0, 0, 0], [0, 0, 0], 0x1A1A1A, "socle2", () => {
-                            Scene.loadFBX("Plaquette.FBX", 10, [0, 4, 45], [0, 0, 0], 0xFFFFFF, "plaquette", () => {
-                                Scene.loadFBX("Logo_Feelity.FBX", 10, [45, 22, 0], [0, 0, 0], 0xFFFFFF, "logo1", () => {
-                                    Scene.loadFBX("Logo_Feelity.FBX", 10, [-45, 22, 0], [0, 0, Math.PI], 0xFFFFFF, "logo2", () => {
-                                      Scene.loadText("./shuvi/vendor/three.js-master/examples/fonts/helvetiker_regular.typeface.json", 8, [0, 22, 46], [0, 0, 0], 0x000000, "text", () => {
-                                        // Positionnement des trophes
-                                        var trophy = new THREE.Group();
-                                        trophy.add(Scene.vars.socle1);
-                                        trophy.add(Scene.vars.socle2);
-                                        trophy.add(Scene.vars.plaquette);
-                                        trophy.add(Scene.vars.logo1);
-                                        trophy.add(Scene.vars.logo2);
-                                        trophy.add(Scene.vars.text);
-                                        var trophyLeft = trophy.clone();
-                                        var trophyRight = trophy.clone();
-                                        trophy.add(Scene.vars.schwi);
-                                        vars.scene.add(trophy);
-                                        trophy.position.z = -50;
-                                        trophy.position.y = 10;
-                                        Scene.vars.goldGroup = trophy;
+        //TODO
 
-                                        trophyLeft.add(Scene.vars.schwi2);
-                                        vars.scene.add(trophyLeft);
-                                        trophyLeft.position.z = 20;
-                                        trophyLeft.position.x = 250;
-                                        trophyLeft.position.y = 10;
-                                        trophyLeft.rotation.y = -45;
-                                        Scene.vars.silverGroup = trophyLeft;
-
-                                        trophyRight.add(Scene.vars.schwi3);
-                                        vars.scene.add(trophyRight);
-                                        trophyRight.position.z = 20;
-                                        trophyRight.position.x = -250;
-                                        trophyRight.position.y = 10;
-                                        trophyRight.rotation.y = 45;
-                                        Scene.vars.bronzeGroup = trophyRight;
-
-                                        //lights
-                                        let directionalLeft = new THREE.DirectionalLight(0xffffff, lightIntensity);
-                                        directionalLeft.position.set(300, 300, 500);
-                                        directionalLeft.target = trophyLeft;
-                                        //let helper = new THREE.DirectionalLightHelper(directionalLeft, 5); 
-                                        //vars.scene.add(helper);
-                                        vars.scene.add(directionalLeft);
-                                        
-                                        let directionalRight = new THREE.DirectionalLight(0xffffff, lightIntensity);
-                                        directionalRight.position.set(-300, 300, 500);
-                                        directionalRight.target = trophyRight;
-                                        //let helper = new THREE.DirectionalLightHelper(directionalRight, 5); 
-                                        //vars.scene.add(helper);
-                                        vars.scene.add(directionalRight);
-
-                                        let directional = new THREE.DirectionalLight(0xffffff, 0.2);
-                                        directional.position.set(0, 600, 500);
-                                        directional.target = trophy;
-                                        //let helper = new THREE.DirectionalLightHelper(directional, 5); 
-                                        //vars.scene.add(helper);
-                                        vars.scene.add(directional);
-
-
-                                        //ombres
-                                        vars.renderer.shadowMap.enabled = true;
-                                        vars.renderer.shadowMapSoft = true;
-
-                                        //directional.castShadow = true;
-                                        directionalLeft.castShadow = true;
-                                        //directionalRight.castShadow = true;
-                                        let d = 1000;
-                                        // directional.shadow.camera.left = -d;
-                                        // directional.shadow.camera.right = d;
-                                        // directional.shadow.camera.top = d;
-                                        // directional.shadow.camera.bottom = -d;
-                                        // directional.shadow.camera.far = 2000;
-                                        // directional.shadow.mapSize.width = 4096;
-                                        // directional.shadow.mapSize.height = 4096;
-                                        directionalLeft.shadow.camera.left = -d;
-                                        directionalLeft.shadow.camera.right = d;
-                                        directionalLeft.shadow.camera.top = d;
-                                        directionalLeft.shadow.camera.bottom = -d;
-                                        directionalLeft.shadow.camera.far = 2000;
-                                        directionalLeft.shadow.mapSize.width = 4096;
-                                        directionalLeft.shadow.mapSize.height = 4096;
-                                        // directionalRight.shadow.camera.left = -d;
-                                        // directionalRight.shadow.camera.right = d;
-                                        // directionalRight.shadow.camera.top = d;
-                                        // directionalRight.shadow.camera.bottom = -d;
-                                        // directionalRight.shadow.camera.far = 2000;
-                                        // directionalRight.shadow.mapSize.width = 4096;
-                                        // directionalRight.shadow.mapSize.height = 4096;
-
-
-                                        Scene.vars.animSpeed = -0.05;
-
-                                        //ok, suppression chargement
-                                        document.querySelector("#loading").remove();
-                                      });
-                                    });
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
+        //ok, suppression chargement
+        document.querySelector("#loading").remove();
+        
 
         window.addEventListener('resize', Scene.onWindowResize, false);
 
@@ -210,8 +107,8 @@ const Scene = {
         loader.load("./shuvi/fbx/" + file, function(model){
             let mixer = new THREE.AnimationMixer( model );
 
-            var action = mixer.clipAction( model.animations[ 0 ] );
-            action.play();
+            //var action = mixer.clipAction( model.animations[ 0 ] );
+            //action.play();
 
             model.scale.set(echelle, echelle, echelle);
             model.position.set(position[0], position[1], position[2]);
@@ -224,7 +121,7 @@ const Scene = {
 
                     //textures
                     if(nom == "plaquette"){
-                        new THREE.TextureLoader().load('./texture/marbre.jpg', (texture)=>{
+                        new THREE.TextureLoader().load('./shuvi/texture/marbre.jpg', (texture)=>{
                             node.material = new THREE.MeshBasicMaterial({map: texture});
                         });
                     }
@@ -292,41 +189,7 @@ const Scene = {
         vars.renderer.setSize(window.innerWidth, window.innerHeight);
     },
     customAnimation: () => {
-        Scene.vars.animPurcent = Scene.vars.animPurcent + Scene.vars.animSpeed;
-
-        if(Scene.vars.animPurcent < 0){
-          Scene.vars.animPurcent = 0;
-        }
-        if(Scene.vars.animPurcent > 1){
-          Scene.vars.animPurcent = 1;
-        }
-
-        if(Scene.vars.animPurcent <= 0.33){
-          Scene.vars.plaquette.position.z = 45 + (25 * 3 * Scene.vars.animPurcent);
-          Scene.vars.text.position.z = 50 + (40 * 3 * Scene.vars.animPurcent);
-        }
-
-        if(Scene.vars.animPurcent >= 0.20 && Scene.vars.animPurcent <= 0.75){
-          let percent = (Scene.vars.animPurcent - 0.2) / 0.55;
-
-          Scene.vars.socle1.position.x = 20 * percent;
-          Scene.vars.socle2.position.x = - (20 * percent);
-          Scene.vars.logo1.position.x = 45 + (45 * percent);
-          Scene.vars.logo2.position.x = - (45 + (45 * percent));
-        }
-        else if(Scene.vars.animPurcent < 0.20){
-          Scene.vars.socle1.position.x = 0;
-          Scene.vars.socle2.position.x = 0;
-          Scene.vars.logo1.position.x = 45;
-          Scene.vars.logo2.position.x = -45;
-        }
-
-        if(Scene.vars.animPurcent >= 0.40){
-          Scene.vars.schwi.position.y = 35 + (15 * 3 * Scene.vars.animPurcent);
-        }
-        else if(Scene.vars.animPurcent < 0.7){
-          Scene.vars.schwi.position.y = 50;
-        }
+       
     },
     animate: () => {
         Scene.render();
@@ -334,12 +197,10 @@ const Scene = {
         Scene.vars.raycaster.setFromCamera(Scene.vars.mouse, Scene.vars.camera);
 
         //intersects
-        if (Scene.vars.goldGroup != undefined){
-          var intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.goldGroup.children, true);
-          //var intersects2 = Scene.vars.raycaster.intersectObjects(Scene.vars.silverGroup.children, true);
-          //var intersects3 = Scene.vars.raycaster.intersectObjects(Scene.vars.bronzeGroup.children, true);
+        if (Scene.vars.loli != undefined){
+          var intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.loli.children, true);
           
-          //Gold
+          //Following cursor
           if (intersects.length > 0) {
               Scene.vars.animSpeed = 0.05;
               Scene.customAnimation();
@@ -347,20 +208,6 @@ const Scene = {
               Scene.vars.animSpeed = -0.05;
               Scene.customAnimation();
           }
-
-          //Silver
-          // if (intersects2.length > 0) {
-          //     Scene.vars.animSpeed = 0.05;
-          // } else {
-          //     Scene.vars.animSpeed = -0.05;
-          // }
-
-          //Bronze
-          // if (intersects3.length > 0) {
-          //     Scene.vars.animSpeed = 0.05;
-          // } else {
-          //     Scene.vars.animSpeed = -0.05;
-          // }
       }
     },
     render: () => {
