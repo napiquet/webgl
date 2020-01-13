@@ -3,6 +3,21 @@ import Stats from './shuvi/vendor/three.js-master/examples/jsm/libs/stats.module
 import { OrbitControls } from './shuvi/vendor/three.js-master/examples/jsm/controls/OrbitControls.js';
 import { FBXLoader } from './shuvi/vendor/three.js-master/examples/jsm/loaders/FBXLoader.js';
 
+let lightIntensity = 0.5;
+
+//lumières
+var light = new THREE.HemisphereLight(0xFFFFFF, 0x444444, lightIntensity);
+var directionalLeft = new THREE.DirectionalLight(0xffffff, lightIntensity);
+var directionalRight = new THREE.DirectionalLight(0xffffff, lightIntensity);
+var directional = new THREE.DirectionalLight(0xffffff, 0.2);
+var directionalMeteor = new THREE.DirectionalLight(0xffffff, 0.5);
+
+//MUSIQUE
+var listener = new THREE.AudioListener();
+//création du son
+var sound = new THREE.Audio(listener);
+
+
 const Scene = {
     vars: {
         container: null,
@@ -11,7 +26,11 @@ const Scene = {
         camera: null,
         raycaster: new THREE.Raycaster(),
         mouse: new THREE.Vector2(),
-        animPurcent: 0
+        meteor: false,
+        meteorReady: false,
+        showing: false,
+        showing2: false,
+        jump: false
     },
     init: () => {
         let vars = Scene.vars;
@@ -36,9 +55,6 @@ const Scene = {
         vars.camera.position.set(-1.5, 210, 572);
 
         //lumière
-        let lightIntensity = 0.5;
-
-        let light = new THREE.HemisphereLight(0xFFFFFF, 0x444444, lightIntensity);
         light.position.set(0, 700, 0);
         vars.scene.add(light);
         
@@ -56,12 +72,6 @@ const Scene = {
         shadowPlane.receiveShadow = true;
         vars.scene.add(shadowPlane);
 
-        //texture du sol, grid helper
-        // let grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
-        // grid.material.opacity = 0.2;
-        // grid.material.transparent = true;
-        // vars.scene.add(grid);
-
         //creation bulle
         let geometry = new THREE.SphereGeometry(1000, 32, 32);
         let material = new THREE.MeshPhongMaterial({color: 0xffffff});
@@ -70,15 +80,95 @@ const Scene = {
         vars.scene.add(sphere);
 
         //chargement des objets
-        //TODO
+        Scene.loadFBX("schwi/schwiFix.fbx", 0.2, [0, 50, 0], [0, 0, 0], 0xFFD700, "schwi", () => {
+            Scene.loadFBX("schwi/schwiFix.fbx", 0.2, [0, 50, 0], [0, 0, 0], 0xCD7F32, "schwi2", () => {
+                Scene.loadFBX("schwi/schwiFix.fbx", 0.2, [0, 50, 0], [0, 0, 0], 0xC0C0C0, "schwi3", () => {
+                    Scene.loadFBX("Socle_Partie1.FBX", 10, [0, 0, 0], [0, 0, 0], 0x1A1A1A, "socle1", () => {
+                        Scene.loadFBX("Socle_Partie2.FBX", 10, [0, 0, 0], [0, 0, 0], 0x1A1A1A, "socle2", () => {
+                            Scene.loadFBX("Plaquette.FBX", 10, [0, 4, 45], [0, 0, 0], 0xFFFFFF, "plaquette", () => {
+                                Scene.loadFBX("Logo_Feelity.FBX", 10, [45, 22, 0], [0, 0, 0], 0xFFFFFF, "logo1", () => {
+                                    Scene.loadFBX("Logo_Feelity.FBX", 10, [-45, 22, 0], [0, 0, Math.PI], 0xFFFFFF, "logo2", () => {
+                                      Scene.loadText("./shuvi/vendor/three.js-master/examples/fonts/helvetiker_regular.typeface.json", 8, [0, 22, 46], [0, 0, 0], 0x000000, "text", "Shuvi", () => {
+                                        // Positionnement des trophes
+                                        var trophy = new THREE.Group();
+                                        trophy.add(Scene.vars.socle1);
+                                        trophy.add(Scene.vars.socle2);
+                                        trophy.add(Scene.vars.plaquette);
+                                        trophy.add(Scene.vars.logo1);
+                                        trophy.add(Scene.vars.logo2);
+                                        trophy.add(Scene.vars.text);
+                                        var trophyLeft = trophy.clone();
+                                        var trophyRight = trophy.clone();
+                                        trophy.add(Scene.vars.schwi);
+                                        vars.scene.add(trophy);
+                                        trophy.position.z = -50;
+                                        trophy.position.y = 10;
+                                        Scene.vars.goldGroup = trophy;
 
-        //ok, suppression chargement
-        document.querySelector("#loading").remove();
-        
+                                        trophyLeft.add(Scene.vars.schwi2);
+                                        vars.scene.add(trophyLeft);
+                                        trophyLeft.position.z = 20;
+                                        trophyLeft.position.x = 250;
+                                        trophyLeft.position.y = 10;
+                                        trophyLeft.rotation.y = -45;
+                                        Scene.vars.silverGroup = trophyLeft;
+
+                                        trophyRight.add(Scene.vars.schwi3);
+                                        vars.scene.add(trophyRight);
+                                        trophyRight.position.z = 20;
+                                        trophyRight.position.x = -250;
+                                        trophyRight.position.y = 10;
+                                        trophyRight.rotation.y = 45;
+                                        Scene.vars.bronzeGroup = trophyRight;
+
+                                        //lights
+                                        directionalLeft.position.set(300, 300, 500);
+                                        directionalLeft.target = trophyLeft;
+                                        vars.scene.add(directionalLeft);
+                                        
+                                        directionalRight.position.set(-300, 300, 500);
+                                        directionalRight.target = trophyRight;
+                                        vars.scene.add(directionalRight);
+
+                                        directional.position.set(0, 600, 500);
+                                        directional.target = trophy;
+                                        vars.scene.add(directional);
+
+
+                                        //ombres
+                                        vars.renderer.shadowMap.enabled = true;
+                                        vars.renderer.shadowMapSoft = true;
+
+                                        directionalLeft.castShadow = true;
+                                        let d = 1000;
+                                        directionalLeft.shadow.camera.left = -d;
+                                        directionalLeft.shadow.camera.right = d;
+                                        directionalLeft.shadow.camera.top = d;
+                                        directionalLeft.shadow.camera.bottom = -d;
+                                        directionalLeft.shadow.camera.far = 2000;
+                                        directionalLeft.shadow.mapSize.width = 4096;
+                                        directionalLeft.shadow.mapSize.height = 4096;
+
+
+                                        Scene.vars.animSpeed = -0.05;
+
+                                        //ok, suppression chargement
+                                        document.querySelector("#loading").remove();
+                                      });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
 
         window.addEventListener('resize', Scene.onWindowResize, false);
 
         window.addEventListener('mousemove', Scene.onMouseMove, false);
+
+        window.addEventListener('mousedown', Scene.onMouseClick, false);
 
         //mise en place des controls et des limites
         vars.controls = new OrbitControls(vars.camera, vars.renderer.domElement);
@@ -87,7 +177,7 @@ const Scene = {
         vars.controls.minAzimuthAngle = -Math.PI / 4;
         vars.controls.maxAzimuthAngle = Math.PI / 4;
         vars.controls.minDistance = 300;
-        vars.controls.maxDistance = 1000;
+        vars.controls.maxDistance = 850;
         vars.controls.target.set(0, 100, 0);
         vars.controls.update(); 
 
@@ -143,9 +233,9 @@ const Scene = {
             callback();
         });
     },
-    loadText: (file, echelle, position, rotation, couleur, nom, callback) => {
+    loadText: (file, echelle, position, rotation, couleur, nom, texte, callback) => {
       let loader = new THREE.FontLoader();
-      let text = "Shuvi";
+      let text = texte;
 
       let hash = document.location.hash.substr( 1 );
       if ( hash.length !== 0 ) {
@@ -182,33 +272,116 @@ const Scene = {
         Scene.vars.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         Scene.vars.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     },
+    onMouseClick: () => {
+        Scene.vars.raycaster.setFromCamera(Scene.vars.mouse, Scene.vars.camera);
+
+        //intersects pour click
+        if (Scene.vars.goldGroup != undefined){
+          var intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.goldGroup.children, true);
+          
+          if (intersects.length > 0) {
+            if(Scene.vars.meteor){
+                Scene.vars.meteor = false;
+            }
+            else{
+                Scene.vars.meteor = true;
+            }
+            Scene.meteor();
+          }
+        }
+    },
     onWindowResize: () => {
         let vars = Scene.vars;
         vars.camera.aspect = window.innerWidth / window.innerHeight;
         vars.camera.updateProjectionMatrix();
         vars.renderer.setSize(window.innerWidth, window.innerHeight);
     },
-    customAnimation: () => {
-       
+    meteor: () => {
+        //YEET METEOR SONG
+        if(Scene.vars.meteor){
+            let vars = Scene.vars;
+
+            //suppression lumières
+            vars.scene.remove(light);
+            vars.scene.remove(directionalLeft);
+            vars.scene.remove(directional);
+            vars.scene.remove(directionalRight);
+
+            //MUSIQUE
+            vars.camera.add(listener);
+            //chargement
+            var audioLoader = new THREE.AudioLoader();
+            audioLoader.load('sound/meteor.mp3', function(buffer){
+                sound.setBuffer(buffer);
+                sound.setLoop(true);
+                sound.setVolume(0.05);
+                sound.play();
+
+                //ajout lumière
+                directionalMeteor.position.set(0, 300, 500);
+                directionalMeteor.target = vars.goldGroup;
+                vars.scene.add(directionalMeteor);
+
+                Scene.vars.meteorReady = true;
+            });
+        }
+        else{
+            let vars = Scene.vars;
+            Scene.vars.meteorReady = false;
+
+            //lumières
+            vars.scene.remove(directionalMeteor);
+            vars.scene.add(directionalLeft);
+            vars.scene.add(directionalRight);
+            vars.scene.add(directional);
+
+            //son et rotations
+            sound.stop();
+            Scene.vars.goldGroup.rotation.x = 0;
+            Scene.vars.silverGroup.rotation.z = 0;
+            Scene.vars.bronzeGroup.rotation.z = 0;
+        }
     },
     animate: () => {
         Scene.render();
         requestAnimationFrame(Scene.animate);
         Scene.vars.raycaster.setFromCamera(Scene.vars.mouse, Scene.vars.camera);
 
-        //intersects
-        if (Scene.vars.loli != undefined){
-          var intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.loli.children, true);
-          
-          //Following cursor
-          if (intersects.length > 0) {
-              Scene.vars.animSpeed = 0.05;
-              Scene.customAnimation();
-          } else {
-              Scene.vars.animSpeed = -0.05;
-              Scene.customAnimation();
+        //intersects pour déplacement souris
+        if (Scene.vars.goldGroup != undefined){
+          var intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.goldGroup.children, true);
+          var intersects2 = Scene.vars.raycaster.intersectObjects(Scene.vars.silverGroup.children, true);
+
+          //Gold
+          if (intersects.length > 0 && !Scene.vars.showing && !Scene.vars.meteor) {
+            Scene.vars.showing = true;
+            Scene.loadText("./shuvi/vendor/three.js-master/examples/fonts/helvetiker_regular.typeface.json", 12, [0, 100, 50], [0, 0, 0], 0xFFFFFF, "click", "CLICK ME!", () => {
+                Scene.vars.scene.add(Scene.vars.click);
+            });
           }
-      }
+          else if(intersects.length <= 0 && Scene.vars.showing){
+            Scene.vars.scene.remove(Scene.vars.click);
+            Scene.vars.showing = false;
+          }
+
+          //Silver
+          if (intersects2.length > 0 && !Scene.vars.showing2 && !Scene.vars.jump) {
+            Scene.vars.showing2 = true;
+            Scene.loadText("./shuvi/vendor/three.js-master/examples/fonts/helvetiker_regular.typeface.json", 12, [-50, 100, 50], [45, 0, 0], 0xFFFFFF, "click2", "CLICK ME!", () => {
+                Scene.vars.scene.add(Scene.vars.click2);
+            });
+          }
+          else if(intersects2.length <= 0 && Scene.vars.showing2){
+            Scene.vars.scene.remove(Scene.vars.click2);
+            Scene.vars.showing2 = false;
+          }
+        }
+
+        if(Scene.vars.meteorReady){
+            Scene.vars.goldGroup.rotation.x += 1;
+            Scene.vars.silverGroup.rotation.z += 1;
+            Scene.vars.bronzeGroup.rotation.z -= 1;
+        }
     },
     render: () => {
         Scene.vars.renderer.render(Scene.vars.scene, Scene.vars.camera);
