@@ -5,12 +5,15 @@ import { FBXLoader } from './shuvi/vendor/three.js-master/examples/jsm/loaders/F
 
 let lightIntensity = 0.5;
 
+//préparations pour animations
+let dir = 1;
+
 //lumières
 var light = new THREE.HemisphereLight(0xFFFFFF, 0x444444, lightIntensity);
 var directionalLeft = new THREE.DirectionalLight(0xffffff, lightIntensity);
 var directionalRight = new THREE.DirectionalLight(0xffffff, lightIntensity);
 var directional = new THREE.DirectionalLight(0xffffff, 0.2);
-var directionalMeteor = new THREE.DirectionalLight(0xffffff, 0.5);
+var directionalMusic = new THREE.DirectionalLight(0xffffff, 0.5);
 
 //MUSIQUE
 var listener = new THREE.AudioListener();
@@ -27,7 +30,7 @@ const Scene = {
         raycaster: new THREE.Raycaster(),
         mouse: new THREE.Vector2(),
         meteor: false,
-        meteorReady: false,
+        animReady: false,
         showing: false,
         showing2: false,
         jump: false
@@ -111,7 +114,7 @@ const Scene = {
                                         trophyLeft.position.x = 250;
                                         trophyLeft.position.y = 10;
                                         trophyLeft.rotation.y = -45;
-                                        Scene.vars.silverGroup = trophyLeft;
+                                        Scene.vars.bronzeGroup = trophyLeft;
 
                                         trophyRight.add(Scene.vars.schwi3);
                                         vars.scene.add(trophyRight);
@@ -119,7 +122,7 @@ const Scene = {
                                         trophyRight.position.x = -250;
                                         trophyRight.position.y = 10;
                                         trophyRight.rotation.y = 45;
-                                        Scene.vars.bronzeGroup = trophyRight;
+                                        Scene.vars.silverGroup = trophyRight;
 
                                         //lights
                                         directionalLeft.position.set(300, 300, 500);
@@ -277,7 +280,7 @@ const Scene = {
 
         //intersects pour click
         if (Scene.vars.goldGroup != undefined){
-          var intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.goldGroup.children, true);
+          let intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.goldGroup.children, true);
           
           if (intersects.length > 0) {
             if(Scene.vars.meteor){
@@ -286,9 +289,22 @@ const Scene = {
             else{
                 Scene.vars.meteor = true;
             }
-            Scene.meteor();
+            Scene.songs("meteor");
           }
         }
+        if (Scene.vars.silverGroup != undefined){
+            let intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.silverGroup.children, true);
+            
+            if (intersects.length > 0) {
+              if(Scene.vars.jump){
+                  Scene.vars.jump = false;
+              }
+              else{
+                  Scene.vars.jump = true;
+              }
+              Scene.songs("jumpforjoy");
+            }
+          }
     },
     onWindowResize: () => {
         let vars = Scene.vars;
@@ -296,9 +312,9 @@ const Scene = {
         vars.camera.updateProjectionMatrix();
         vars.renderer.setSize(window.innerWidth, window.innerHeight);
     },
-    meteor: () => {
+    songs: (song) => {
         //YEET METEOR SONG
-        if(Scene.vars.meteor){
+        if(Scene.vars.meteor || Scene.vars.jump){
             let vars = Scene.vars;
 
             //suppression lumières
@@ -311,26 +327,36 @@ const Scene = {
             vars.camera.add(listener);
             //chargement
             var audioLoader = new THREE.AudioLoader();
-            audioLoader.load('sound/meteor.mp3', function(buffer){
+            audioLoader.load('sound/' + song + '.mp3', function(buffer){
                 sound.setBuffer(buffer);
                 sound.setLoop(true);
                 sound.setVolume(0.05);
                 sound.play();
 
                 //ajout lumière
-                directionalMeteor.position.set(0, 300, 500);
-                directionalMeteor.target = vars.goldGroup;
-                vars.scene.add(directionalMeteor);
+                directionalMusic.position.set(0, 300, 500);
+                directionalMusic.target = vars.goldGroup;
+                vars.scene.add(directionalMusic);
 
-                Scene.vars.meteorReady = true;
+                Scene.vars.animReady = true;
+
+                //SONG JUMP FOR JOY: Attendre le bon moment pour faire sauter la deuxieme, puis troisième
+                setTimeout(function(){
+                    Scene.vars.silverReady = true;
+                }, 32000);
+                setTimeout(function(){
+                    Scene.vars.bronzeReady = true;
+                }, 47000);
             });
         }
         else{
             let vars = Scene.vars;
-            Scene.vars.meteorReady = false;
+            Scene.vars.animReady = false;
+            Scene.vars.silverReady = false;
+            Scene.vars.bronzeReady = false;
 
             //lumières
-            vars.scene.remove(directionalMeteor);
+            vars.scene.remove(directionalMusic);
             vars.scene.add(directionalLeft);
             vars.scene.add(directionalRight);
             vars.scene.add(directional);
@@ -338,8 +364,11 @@ const Scene = {
             //son et rotations
             sound.stop();
             Scene.vars.goldGroup.rotation.x = 0;
+            Scene.vars.goldGroup.position.y = 10;
             Scene.vars.silverGroup.rotation.z = 0;
+            Scene.vars.silverGroup.position.y = 10;
             Scene.vars.bronzeGroup.rotation.z = 0;
+            Scene.vars.bronzeGroup.position.y = 10;
         }
     },
     animate: () => {
@@ -347,15 +376,15 @@ const Scene = {
         requestAnimationFrame(Scene.animate);
         Scene.vars.raycaster.setFromCamera(Scene.vars.mouse, Scene.vars.camera);
 
-        //intersects pour déplacement souris
-        if (Scene.vars.goldGroup != undefined){
+        //intersects pour déplacement souris (affichage d'un "CLICK ME!")
+        if (Scene.vars.goldGroup != undefined && Scene.vars.silverGroup != undefined){
           var intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.goldGroup.children, true);
           var intersects2 = Scene.vars.raycaster.intersectObjects(Scene.vars.silverGroup.children, true);
 
           //Gold
-          if (intersects.length > 0 && !Scene.vars.showing && !Scene.vars.meteor) {
+          if (intersects.length > 0 && !Scene.vars.showing && !Scene.vars.meteor && !Scene.vars.jump) {
             Scene.vars.showing = true;
-            Scene.loadText("./shuvi/vendor/three.js-master/examples/fonts/helvetiker_regular.typeface.json", 12, [0, 100, 50], [0, 0, 0], 0xFFFFFF, "click", "CLICK ME!", () => {
+            Scene.loadText("./shuvi/vendor/three.js-master/examples/fonts/helvetiker_regular.typeface.json", 12, [0, 100, 25], [0, 0, 0], 0xFFFFFF, "click", "CLICK ME!", () => {
                 Scene.vars.scene.add(Scene.vars.click);
             });
           }
@@ -365,9 +394,9 @@ const Scene = {
           }
 
           //Silver
-          if (intersects2.length > 0 && !Scene.vars.showing2 && !Scene.vars.jump) {
+          if (intersects2.length > 0 && !Scene.vars.showing2 && !Scene.vars.jump && !Scene.vars.meteor) {
             Scene.vars.showing2 = true;
-            Scene.loadText("./shuvi/vendor/three.js-master/examples/fonts/helvetiker_regular.typeface.json", 12, [-50, 100, 50], [45, 0, 0], 0xFFFFFF, "click2", "CLICK ME!", () => {
+            Scene.loadText("./shuvi/vendor/three.js-master/examples/fonts/helvetiker_regular.typeface.json", 12, [-200, 100, 50], [0, 45, 0], 0xFFFFFF, "click2", "CLICK ME!", () => {
                 Scene.vars.scene.add(Scene.vars.click2);
             });
           }
@@ -377,10 +406,31 @@ const Scene = {
           }
         }
 
-        if(Scene.vars.meteorReady){
+        //animation de spin pour METEOR
+        if(Scene.vars.animReady && Scene.vars.meteor){
             Scene.vars.goldGroup.rotation.x += 1;
-            Scene.vars.silverGroup.rotation.z += 1;
-            Scene.vars.bronzeGroup.rotation.z -= 1;
+            Scene.vars.silverGroup.rotation.z -= 1;
+            Scene.vars.bronzeGroup.rotation.z += 1;
+        }
+
+        //animation jump pour JUMP FOR JOY
+        if(Scene.vars.animReady && Scene.vars.jump){
+            if(Scene.vars.goldGroup.position.y >= 30){
+                dir = -1;
+            }
+            else if(Scene.vars.goldGroup.position.y <= 10){
+                dir = 1;
+            }
+
+            Scene.vars.goldGroup.position.y += dir;
+
+            //sauts en synchro avec la musique (voir methode songs)
+            if(Scene.vars.silverReady != undefined && Scene.vars.silverReady){
+                Scene.vars.silverGroup.position.y += dir;
+            }
+            if(Scene.vars.bronzeReady != undefined && Scene.vars.bronzeReady){
+                Scene.vars.bronzeGroup.position.y += dir;
+            }
         }
     },
     render: () => {
