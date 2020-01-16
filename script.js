@@ -6,14 +6,14 @@ import { FBXLoader } from './shuvi/vendor/three.js-master/examples/jsm/loaders/F
 let lightIntensity = 0.5;
 
 //préparations pour animations
-let dir = 1;
+let dir = 2;
 
 //lumières
 var light = new THREE.HemisphereLight(0xFFFFFF, 0x444444, lightIntensity);
 var directionalLeft = new THREE.DirectionalLight(0xffffff, lightIntensity);
 var directionalRight = new THREE.DirectionalLight(0xffffff, lightIntensity);
 var directional = new THREE.DirectionalLight(0xffffff, 0.2);
-var directionalMusic = new THREE.DirectionalLight(0xffffff, 0.5);
+var directionalMusic = new THREE.DirectionalLight(0x5bb9e9, 0.5);
 
 //MUSIQUE
 var listener = new THREE.AudioListener();
@@ -316,6 +316,7 @@ const Scene = {
         //YEET METEOR SONG
         if(Scene.vars.meteor || Scene.vars.jump){
             let vars = Scene.vars;
+            vars.scene.remove(vars.click2);
 
             //suppression lumières
             vars.scene.remove(light);
@@ -330,7 +331,7 @@ const Scene = {
             audioLoader.load('sound/' + song + '.mp3', function(buffer){
                 sound.setBuffer(buffer);
                 sound.setLoop(true);
-                sound.setVolume(0.05);
+                sound.setVolume(0.1);
                 sound.play();
 
                 //ajout lumière
@@ -342,9 +343,15 @@ const Scene = {
 
                 //SONG JUMP FOR JOY: Attendre le bon moment pour faire sauter la deuxieme, puis troisième
                 setTimeout(function(){
+                    Scene.vars.goldGroup.position.y = 10;
+                    Scene.vars.silverGroup.position.y = 10;
+                    Scene.vars.bronzeGroup.position.y = 10;
                     Scene.vars.silverReady = true;
                 }, 32000);
                 setTimeout(function(){
+                    Scene.vars.goldGroup.position.y = 10;
+                    Scene.vars.silverGroup.position.y = 10;
+                    Scene.vars.bronzeGroup.position.y = 10;
                     Scene.vars.bronzeReady = true;
                 }, 47000);
             });
@@ -364,10 +371,16 @@ const Scene = {
             //son et rotations
             sound.stop();
             Scene.vars.goldGroup.rotation.x = 0;
+            Scene.vars.goldGroup.rotation.y = 0;
+            Scene.vars.goldGroup.rotation.z = 0;
             Scene.vars.goldGroup.position.y = 10;
             Scene.vars.silverGroup.rotation.z = 0;
+            Scene.vars.silverGroup.rotation.y = 45;
+            Scene.vars.silverGroup.rotation.x = 0;
             Scene.vars.silverGroup.position.y = 10;
             Scene.vars.bronzeGroup.rotation.z = 0;
+            Scene.vars.bronzeGroup.rotation.y = -45;
+            Scene.vars.bronzeGroup.rotation.x = 0;
             Scene.vars.bronzeGroup.position.y = 10;
         }
     },
@@ -409,17 +422,23 @@ const Scene = {
         //animation de spin pour METEOR
         if(Scene.vars.animReady && Scene.vars.meteor){
             Scene.vars.goldGroup.rotation.x += 1;
+            Scene.vars.goldGroup.rotation.z += 1;
+            Scene.vars.goldGroup.rotation.y += 1;
             Scene.vars.silverGroup.rotation.z -= 1;
+            Scene.vars.silverGroup.rotation.x -= 1;
+            Scene.vars.silverGroup.rotation.y -= 1;
             Scene.vars.bronzeGroup.rotation.z += 1;
+            Scene.vars.bronzeGroup.rotation.y += 1;
+            Scene.vars.bronzeGroup.rotation.x += 1;
         }
 
         //animation jump pour JUMP FOR JOY
         if(Scene.vars.animReady && Scene.vars.jump){
             if(Scene.vars.goldGroup.position.y >= 30){
-                dir = -1;
+                dir = -2;
             }
             else if(Scene.vars.goldGroup.position.y <= 10){
-                dir = 1;
+                dir = 2;
             }
 
             Scene.vars.goldGroup.position.y += dir;
