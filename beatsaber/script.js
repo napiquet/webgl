@@ -8,9 +8,6 @@ let lightIntensity = 0.5;
 //préparations pour animations
 let dir = 2;
 
-//lumières
-var directionalMusic = new THREE.DirectionalLight(0x5bb9e9, 0.5);
-
 //MUSIQUE
 var listener = new THREE.AudioListener();
 //création du son
@@ -25,8 +22,12 @@ const Scene = {
         camera: null,
         raycaster: new THREE.Raycaster(),
         mouse: new THREE.Vector2(),
+        color: 'black',
         started: false,
-        ready: false
+        ready: false,
+        score: 0,
+        redSpeed: 20,
+        blueSpeed: 20
     },
     init: () => {
         let vars = Scene.vars;
@@ -55,11 +56,13 @@ const Scene = {
         Scene.loadFBX("beat.fbx", 0.2, [0, 50, 0], [0, 0, 0], 0xff3844, "red", () => {
             Scene.loadFBX("beat.fbx", 0.2, [0, 50, 0], [0, 0, 0], 0x5bb9e9, "blue", () => {
                 Scene.loadText("../shuvi/vendor/three.js-master/examples/fonts/helvetiker_regular.typeface.json", 18, [0, 100, 0], [0, 90, 0], 0xFFFFFF, "start", "CLICK ANYWHERE TO START", () => {
+                    vars.red.name = 'red';
+                    vars.blue.name = 'blue';
                     vars.scene.add(vars.start);
                     
                     //lights
                     var directional = new THREE.DirectionalLight(0xffffff, 0.5);
-                    directional.position.set(500, 50, 0);
+                    directional.position.set(1000, 50, 0);
                     directional.target = vars.red;
                     vars.scene.add(directional);
 
@@ -190,7 +193,7 @@ const Scene = {
                 let intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.red.children, true);
                 
                 if (intersects.length > 0) {
-                    Scene.beatsaber();
+                    Scene.beatsaber('red');
                 }
             }
             //BLUE
@@ -198,7 +201,7 @@ const Scene = {
                 let intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.blue.children, true);
                 
                 if (intersects.length > 0) {
-                    Scene.beatsaber();
+                    Scene.beatsaber('blue');
                 }
             }
         }
@@ -212,11 +215,12 @@ const Scene = {
         vars.camera.updateProjectionMatrix();
         vars.renderer.setSize(window.innerWidth, window.innerHeight);
     },
-    beatsaber: () => {
+    beatsaber: (color) => {
         let vars = Scene.vars;
 
         if(vars.ready){
-
+            Scene.vars.scene.remove(Scene.vars.scene.getObjectByName(color));
+            Scene.vars.score += 1;
         }
     },
     songs: () => {
@@ -237,8 +241,51 @@ const Scene = {
                 sound.setVolume(0.1);
                 sound.play();
 
+                //CUBES
+
+                //PART 1: DRUMS
+                Scene.timeout('red', 2.9); Scene.timeout('blue', 3.2); Scene.timeout('red', 3.5); Scene.timeout('blue', 3.9);
+                Scene.timeout('red', 4.2); Scene.timeout('blue', 4.5); Scene.timeout('red', 4.9); Scene.timeout('blue', 5.2);
+                Scene.timeout('red', 5.5); Scene.timeout('blue', 5.9); Scene.timeout('red', 6.2); Scene.timeout('blue', 6.5);
+                Scene.timeout('red', 6.9); Scene.timeout('blue', 7.2); Scene.timeout('red', 7.5); Scene.timeout('blue', 7.9);
+                Scene.timeout('red', 8.2); Scene.timeout('blue', 8.5); Scene.timeout('red', 8.9); Scene.timeout('blue', 9.2);
+                Scene.timeout('red', 9.5); Scene.timeout('blue', 9.9); Scene.timeout('red', 10.2); Scene.timeout('blue', 10.5);
+                Scene.timeout('red', 10.9); Scene.timeout('blue', 11.2); Scene.timeout('red', 11.5); Scene.timeout('blue', 11.9);
+                Scene.timeout('red', 12.2); Scene.timeout('blue', 12.5); Scene.timeout('red', 12.9); Scene.timeout('blue', 13.5);
+                Scene.timeout('red', 13.9); Scene.timeout('blue', 14.2); Scene.timeout('red', 14.5); Scene.timeout('blue', 14.9);
+                Scene.timeout('red', 15.2); Scene.timeout('blue', 15.5); Scene.timeout('red', 15.9); Scene.timeout('blue', 16.2);
+                Scene.timeout('red', 16.5); Scene.timeout('blue', 16.9); Scene.timeout('red', 17.2); Scene.timeout('blue', 17.5);
+                Scene.timeout('red', 17.9); Scene.timeout('blue', 18.2); Scene.timeout('red', 18.5); Scene.timeout('blue', 18.9);
+                Scene.timeout('red', 19.2); Scene.timeout('blue', 19.5); Scene.timeout('red', 19.9); Scene.timeout('blue', 20.2);
+                Scene.timeout('red', 20.5); Scene.timeout('blue', 20.9); Scene.timeout('red', 21.2); Scene.timeout('blue', 21.5);
+                Scene.timeout('red', 21.9); Scene.timeout('blue', 22.2); Scene.timeout('red', 22.5); Scene.timeout('blue', 22.9);
+                Scene.timeout('red', 23.2); Scene.timeout('blue', 23.5); Scene.timeout('red', 23.9); Scene.timeout('blue', 24.2);
+                Scene.timeout('red', 24.5); Scene.timeout('blue', 24.9); Scene.timeout('red', 25.2);
+
+                //PART 2: SINGING SOFT
+                
+
+                //END
                 vars.ready = true;
             });
+        }
+    },
+    timeout: (color, time) => {
+        if(color == 'red'){
+            setTimeout(function(){
+                Scene.vars.red.position.y = 50;
+                Scene.vars.red.position.z = 120;
+
+                Scene.vars.scene.add(Scene.vars.red);
+            }, time*1000);
+        }
+        else if(color == 'blue'){
+            setTimeout(function(){
+                Scene.vars.scene.add(Scene.vars.blue);
+
+                Scene.vars.blue.position.y = 50;
+                Scene.vars.blue.position.z = -120;
+            }, time*1000);
         }
     },
     animate: () => {
@@ -246,7 +293,31 @@ const Scene = {
         requestAnimationFrame(Scene.animate);
         Scene.vars.raycaster.setFromCamera(Scene.vars.mouse, Scene.vars.camera);
 
-        
+        if(Scene.vars.ready){
+            //déplacement du cube rouge
+            if(Scene.vars.scene.getObjectByName('red') != undefined && Scene.vars.scene.getObjectByName('red') != false){
+                Scene.vars.red.position.x += Scene.vars.redSpeed;
+            }
+            else{
+                Scene.vars.red.position.x = -600;
+            }
+
+            //déplacement du cube bleu
+            if(Scene.vars.scene.getObjectByName('blue') != undefined && Scene.vars.scene.getObjectByName('blue') != false){
+                Scene.vars.blue.position.x += Scene.vars.blueSpeed;
+            }
+            else{
+                Scene.vars.blue.position.x = -600;
+            }
+
+            //déstructions des cubes
+            if(Scene.vars.red.position.x > 450){
+                Scene.vars.scene.remove(Scene.vars.red);
+            }
+            if(Scene.vars.blue.position.x > 450){
+                Scene.vars.scene.remove(Scene.vars.blue);
+            }
+        }
     },
     render: () => {
         Scene.vars.renderer.render(Scene.vars.scene, Scene.vars.camera);
